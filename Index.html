@@ -3,33 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dragon Girl: Matted Grove v2.1.0 - Pixel Perfect</title>
+    <title>Dragon Girl: Matted Grove v2.9.5 - Pixel Perfect-Fit Build</title>
     <style>
         body { margin: 0; padding: 0; background-color: #040605; overflow: hidden; touch-action: none; user-select: none; font-family: sans-serif; }
         canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; }
         h1 { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; color: #ff99aa; font-size: 16px; text-shadow: 0 0 8px #ff99aa55; z-index: 10; pointer-events: none; }
-        #dialogBox { position: fixed; top: 45px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 600px; background-color: rgba(17, 17, 17, 0.85); border: 2px solid #444; border-radius: 10px; padding: 10px; font-size: 14px; color: #eee; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
+        
+        #dialogBox { position: fixed; top: 45px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 600px; background-color: rgba(17, 17, 17, 0.85); border: 2px solid #ff6688; border-radius: 10px; padding: 10px; font-size: 14px; color: #eee; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
         .name { color: #ff6688; font-weight: bold; }
-        #dpad { position: fixed; left: 40px; bottom: 40px; z-index: 10; display: flex; flex-direction: column; align-items: center; }
-        .dpad-row { display: flex; justify-content: center; gap: 15px; margin: 4px 0; }
-        .dpad-btn { width: 65px; height: 65px; font-size: 24px; background: rgba(40,40,40,0.7); color: white; border: 2px solid #666; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+        #statusWindow { position: fixed; right: 20px; top: 10px; background: rgba(0,0,0,0.7); border: 1px solid #ff99aa; padding: 8px 12px; color: #fff; font-size: 12px; border-radius: 5px; z-index: 10; }
+        
+        #dpad-container { 
+            position: fixed; 
+            left: 30px; 
+            bottom: 30px; 
+            z-index: 15; 
+            display: grid;
+            grid-template-columns: repeat(3, 55px);
+            grid-template-rows: repeat(3, 55px);
+            background: rgba(0, 0, 0, 0.15);
+            padding: 5px;
+            border-radius: 8px;
+        }
+        .dpad-btn { 
+            background: rgba(60, 60, 60, 0.45); 
+            border: 1px solid rgba(255, 255, 255, 0.25); 
+            border-radius: 4px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+        }
+        .dpad-center { background: rgba(45, 45, 45, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; display: flex; justify-content: center; align-items: center; }
+        .center-core { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); transform: rotate(45deg); }
+        
+        #btnUp { grid-column: 2; grid-row: 1; }
+        #btnLeft { grid-column: 1; grid-row: 2; }
+        #btnCenter { grid-column: 2; grid-row: 2; }
+        #btnRight { grid-column: 3; grid-row: 2; }
+        #btnDown { grid-column: 2; grid-row: 3; }
+
+        .arrow-up { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid rgba(255,255,255,0.5); }
+        .arrow-down { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid rgba(255,255,255,0.5); }
+        .arrow-left { width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-right: 12px solid rgba(255,255,255,0.5); }
+        .arrow-right { width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid rgba(255,255,255,0.5); }
     </style>
 </head>
 <body>
 
-    <h1>🐉 Dragon Girl v2.1.0 - Pixel Perfect Build</h1>
+    <h1>🐉 Dragon Girl v2.9.5 - Pixel Perfect-Fit</h1>
     <div id="dialogBox">
-        <span class="name">มังกรน้อย:</span> 
-        <span id="storyText">ผู้กำกับคะ! มินิตรวจเช็กโค้ดและปรับปรุงการซอยขาเดินครบลูป 8 เฟรมให้สมูทแล้วค่ะ แถมผืนดินก็ขี่เกยกันจนเส้นตารางดำหายวับไปแล้วด้วย ลุยเลยค่ะ! 🏃‍♀️✨</span>
+        <span class="name">มังกรน้อย (ดื้อดึง):</span> 
+        <span id="storyText">หึยยย... มืดมนชะมัด ป่าทึบพวกนี้ล้อมเราไว้หมดเลยเหรอเนี่ย? ชิ! แต่เอ๊ะ... นั่นมันกล่องสมบัติทองคำนี่นา! แอบซ่อนอะไรไว้กันแน่ ขนาดกำลังพอดีคำเลย! 😤🎒✨</span>
+    </div>
+
+    <div id="statusWindow">
+        เผ่า: มังกร (หญิง)<br>
+        ชุด: ผ้าราคาถูก 👕<br>
+        อาวุธ: มือเปล่า 👊<br>
+        พลังโจมตี (ATK): <span id="statAtk">1</span><br>
+        กล่องลับที่พบ: <span id="chestsFound">0</span>/1
     </div>
     
-    <div id="dpad">
-        <div class="dpad-btn" id="btnUp" data-key="ArrowUp">🔼</div>
-        <div class="dpad-row">
-            <div class="dpad-btn" id="btnLeft" data-key="ArrowLeft">◀️</div>
-            <div class="dpad-btn" id="btnDown" data-key="ArrowDown">🔽</div>
-            <div class="dpad-btn" id="btnRight" data-key="ArrowRight">▶️</div>
-        </div>
+    <div id="dpad-container">
+        <div class="dpad-btn" id="btnUp" data-key="ArrowUp"><div class="arrow-up"></div></div>
+        <div class="dpad-btn" id="btnLeft" data-key="ArrowLeft"><div class="arrow-left"></div></div>
+        <div class="dpad-center" id="btnCenter"><div class="center-core"></div></div>
+        <div class="dpad-btn" id="btnRight" data-key="ArrowRight"><div class="arrow-right"></div></div>
+        <div class="dpad-btn" id="btnDown" data-key="ArrowDown"><div class="arrow-down"></div></div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -40,29 +80,41 @@
 
         const pImgRaw = new Image(); pImgRaw.src = '1291.png';
         const tImgRaw = new Image(); tImgRaw.src = '1294.png';
-        const gImgRaw = new Image(); gImgRaw.src = '1296.png';
+        const gImgRaw = new Image(); gImgRaw.src = '1337.png'; 
+        const cImgRaw = new Image(); cImgRaw.src = '1349.png'; 
 
-        let pImg, tImg, gImg;
+        let pImg, tImg, gImg, cImg;
         let loadedCount = 0;
         
         const onAssetLoad = () => {
-            if (++loadedCount === 3) {
+            if (++loadedCount === 4) {
                 pImg = removeBlackBackground(pImgRaw);
                 tImg = removeBlackBackground(tImgRaw);
                 gImg = gImgRaw; 
+                cImg = cImgRaw; 
                 initGame();
             }
         };
-        pImgRaw.onload = onAssetLoad; tImgRaw.onload = onAssetLoad; gImgRaw.onload = onAssetLoad;
+        pImgRaw.onload = onAssetLoad; tImgRaw.onload = onAssetLoad; gImgRaw.onload = onAssetLoad; cImgRaw.onload = onAssetLoad;
 
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
-        // รักษาระยะกล้องสเกลเดิมที่ผู้กำกับชอบ
         const WORLD_ZOOM = 0.52; 
 
-        // อัปเดตความเร็วแอนิเมชันเดิน (animSpeed) ให้สมดุลเพื่อลบล้างจังหวะภาพกระตุก
-        const player = { x: 0, y: 0, speed: 5, direction: 'front', animFrame: 0, moving: false, animSpeed: 0.15 };
+        const player = { 
+            x: 0, 
+            y: 0, 
+            speed: 5, 
+            direction: 'front', 
+            animFrame: 0, 
+            moving: false, 
+            animSpeed: 0.15,
+            radius: 25, 
+            atk: 1,
+            chests: 0
+        };
+        
         const camera = { x: 0, y: 0, easing: 0.1 };
         const keys = {};
 
@@ -73,25 +125,74 @@
                 const rect = btn.getBoundingClientRect();
                 if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
                     keys[btn.getAttribute('data-key')] = true;
-                    btn.style.background = "rgba(120,120,120,0.9)";
-                } else { btn.style.background = "rgba(40,40,40,0.7)"; }
+                    btn.style.background = "rgba(255, 102, 136, 0.6)"; 
+                } else { btn.style.background = "rgba(60, 60, 60, 0.45)"; }
             });
         }
         window.addEventListener('touchstart', e => { for(let i=0; i<e.touches.length; i++) handleTouch(e.touches[i].clientX, e.touches[i].clientY); });
         window.addEventListener('touchmove', e => { e.preventDefault(); for(let i=0; i<e.touches.length; i++) handleTouch(e.touches[i].clientX, e.touches[i].clientY); }, { passive: false });
-        window.addEventListener('touchend', () => { keys['ArrowUp'] = false; keys['ArrowDown'] = false; keys['ArrowLeft'] = false; keys['ArrowRight'] = false; dpadBtns.forEach(btn => btn.style.background = "rgba(40,40,40,0.7)"); });
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
+        window.addEventListener('touchend', () => { keys['ArrowUp'] = false; keys['ArrowDown'] = false; keys['ArrowLeft'] = false; keys['ArrowRight'] = false; dpadBtns.forEach(btn => btn.style.background = "rgba(60, 60, 60, 0.45)"); });
+        
+        window.addEventListener('keydown', e => {
+            if(e.key === 'w' || e.key === 'W') keys['ArrowUp'] = true;
+            if(e.key === 's' || e.key === 'S') keys['ArrowDown'] = true;
+            if(e.key === 'a' || e.key === 'A') keys['ArrowLeft'] = true;
+            if(e.key === 'd' || e.key === 'D') keys['ArrowRight'] = true;
+            keys[e.key] = true;
+        });
+        window.addEventListener('keyup', e => {
+            if(e.key === 'w' || e.key === 'W') keys['ArrowUp'] = false;
+            if(e.key === 's' || e.key === 'S') keys['ArrowDown'] = false;
+            if(e.key === 'a' || e.key === 'A') keys['ArrowLeft'] = false;
+            if(e.key === 'd' || e.key === 'D') keys['ArrowRight'] = false;
+            keys[e.key] = false;
+        });
 
         const trees = [];
+        const rocks = [];
+        const chests = [];
+        const storyText = document.getElementById('storyText');
+
+        function getDistance(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        }
+
         function initGame() {
-            for (let i = 0; i < 45; i++) {
-                trees.push({
-                    x: Math.random() * 2400 - 1200,
-                    y: Math.random() * 2400 - 1200,
-                    type: Math.floor(Math.random() * 4)
-                });
+            const baseRadius = 520; 
+            const totalWallTrees = 64; 
+            
+            for (let i = 0; i < totalWallTrees; i++) {
+                const angle = (i / totalWallTrees) * Math.PI * 2;
+                if (angle > 4.5 && angle < 4.9) continue; 
+
+                const organicWave = Math.sin(angle * 6) * 50 + Math.cos(angle * 3) * 30;
+                const dynamicRadius = baseRadius + organicWave;
+                const tx = Math.cos(angle) * dynamicRadius;
+                const ty = Math.sin(angle) * dynamicRadius;
+
+                trees.push({ x: tx, y: ty, type: Math.floor(Math.random() * 4), radius: 42 });
             }
+
+            for (let i = 0; i < 160; i++) {
+                const randAngle = Math.random() * Math.PI * 2;
+                const randDist = (baseRadius + 40) + (Math.random() * 800); 
+                if (randAngle > 4.5 && randAngle < 4.9 && randDist < 1400) continue;
+
+                const tx = Math.cos(randAngle) * randDist;
+                const ty = Math.sin(randAngle) * randDist;
+                trees.push({ x: tx, y: ty, type: Math.floor(Math.random() * 4), radius: 40 });
+            }
+
+            for (let pathY = -550; pathY >= -1800; pathY -= 120) {
+                trees.push({ x: -200 - (Math.random() * 20), y: pathY, type: Math.floor(Math.random() * 4), radius: 40 });
+                trees.push({ x: 200 + (Math.random() * 20), y: pathY, type: Math.floor(Math.random() * 4), radius: 40 });
+            }
+
+            rocks.push({ x: -350, y: 220, width: 90, height: 70, radius: 45 });
+            
+            // 🌟 🛠️ ตั้งพิกัดกล่องไว้ที่โซนกลางลานเปิดโล่ง (y: 20) พ้นแนวป่าด้านหลังแน่นอน
+            chests.push({ x: 0, y: 20, opened: false, radius: 45, isFirstChest: true });
+            
             gameLoop();
         }
 
@@ -113,14 +214,49 @@
 
         function update() {
             player.moving = false;
-            if (keys['ArrowUp'] || keys['w']) { player.y -= player.speed; player.direction = 'back'; player.moving = true; }
-            if (keys['ArrowDown'] || keys['s']) { player.y += player.speed; player.direction = 'front'; player.moving = true; }
-            if (keys['ArrowLeft'] || keys['a']) { player.x -= player.speed; player.direction = 'left'; player.moving = true; }
-            if (keys['ArrowRight'] || keys['d']) { player.x += player.speed; player.direction = 'right'; player.moving = true; }
+            let nextX = player.x;
+            let nextY = player.y;
+
+            if (keys['ArrowUp']) { nextY -= player.speed; player.direction = 'back'; player.moving = true; }
+            if (keys['ArrowDown']) { nextY += player.speed; player.direction = 'front'; player.moving = true; }
+            if (keys['ArrowLeft']) { nextX -= player.speed; player.direction = 'left'; player.moving = true; }
+            if (keys['ArrowRight']) { nextX += player.speed; player.direction = 'right'; player.moving = true; }
+
+            let canMoveX = true;
+            let canMoveY = true;
+
+            for (let t of trees) {
+                if (getDistance(nextX, player.y, t.x, t.y) < (player.radius + t.radius)) canMoveX = false;
+                if (getDistance(player.x, nextY, t.x, t.y) < (player.radius + t.radius)) canMoveY = false;
+            }
+
+            for (let r of rocks) {
+                if (getDistance(nextX, player.y, r.x, r.y) < (player.radius + r.radius)) canMoveX = false;
+                if (getDistance(player.x, nextY, r.x, r.y) < (player.radius + r.radius)) canMoveY = false;
+            }
+
+            if (canMoveX) player.x = nextX;
+            if (canMoveY) player.y = nextY;
+
+            for (let c of chests) {
+                if (!c.opened && getDistance(player.x, player.y, c.x, c.y) < (player.radius + c.radius)) {
+                    c.opened = true;
+                    player.chests += 1;
+                    
+                    if (c.isFirstChest) {
+                        player.atk += 5; 
+                        document.getElementById('statAtk').innerText = player.atk;
+                        document.getElementById('chestsFound').innerText = player.chests;
+                        document.getElementById('statusWindow').innerHTML = `เผ่า: มังกร (หญิง)<br>ชุด: ผ้าราคาถูก 👕<br>อาวุธ: กิ่งไม้แห้งอนาถา 🪵<br>พลังโจมตี (ATK): <span id="statAtk">${player.atk}</span><br>กล่องลับที่พบ: <span id="chestsFound">${player.chests}</span>/1`;
+                        
+                        storyText.innerText = "หาาา!? อะไรเนี่ยยย! กล่องทองหรูหราตั้งซะเด่นตระหง่าน แต่ข้างในมีแค่ 'กิ่งไม้แห้งอนาถา' กิ่งเดียวเนี่ยนะ!? คนเขียนบทเอาอะไรคิดเนี่ยยย! หึยยย โกรธแล้วนะ! 😤🪵💢 (แต่เอามาถือประชดชีวิตหน่อยละกัน ลองเดินขึ้นเหนือหาทางออกกันต่อค่ะ)";
+                    }
+                }
+            }
 
             if (player.moving) { 
                 player.animFrame += player.animSpeed;
-                if (player.animFrame >= 8) player.animFrame = 0; // ลูปแอนิเมชันให้ครบรอบ 8 เฟรมแบบพอดีเวลา
+                if (player.animFrame >= 8) player.animFrame = 0; 
             } else { 
                 player.animFrame = 0; 
             }
@@ -140,16 +276,8 @@
             const camY = Math.floor(camera.y);
             ctx.translate(-camX, -camY);
 
-            // 1. วาดพื้นผิวเชื่อมกันไร้รอยต่อ (แก้บั๊กเส้นกริดดำถาวรด้วย Extra Overlap)
-            const gCellW = gImg.width / 4; const gCellH = gImg.height / 4;
-            
-            // ครอปเนื้อดินเข้ามานิดหน่อยเพื่อเล็งจุดกึ่งกลางแผ่นดิน
-            const sX = gCellW * 0.05; const sY = gCellH * 0.05;
-            const sW = gCellW * 0.90; const sH = gCellH * 0.90;
-            
-            const nativeTileSize = 256; 
-            // 🌟 เพิ่มการเกยทับซ้อนปิดขอบดำหนาขึ้นเป็น 24 พิกเซล บล็อกจะเบียดทับกันจนเส้นรอยต่อหายสนิทครับ
-            const OVERLAP = 24; 
+            const nativeTileSize = gImg.width > 0 ? gImg.width : 512; 
+            const OVERLAP = 1; 
 
             const startX = Math.floor((camX - canvas.width / WORLD_ZOOM / 2) / nativeTileSize) - 1;
             const endX = startX + Math.ceil(canvas.width / WORLD_ZOOM / nativeTileSize) + 2;
@@ -158,17 +286,17 @@
 
             for (let i = startX; i < endX; i++) {
                 for (let j = startY; j < endY; j++) {
-                    ctx.drawImage(gImg, sX, sY, sW, sH, i * nativeTileSize, j * nativeTileSize, nativeTileSize + OVERLAP, nativeTileSize + OVERLAP);
+                    ctx.drawImage(gImg, i * nativeTileSize, j * nativeTileSize, nativeTileSize + OVERLAP, nativeTileSize + OVERLAP);
                 }
             }
 
-            // 2. จัดเลเยอร์ความสูง (Y-Sorting)
             const renderQueue = [];
             renderQueue.push({ type: 'player', y: player.y });
-            for (let t of trees) { renderQueue.push({ type: 'tree', y: t.y, tree: t }); }
+            for (let t of trees) { renderQueue.push({ type: 'tree', y: t.y, object: t }); }
+            for (let r of rocks) { renderQueue.push({ type: 'rock', y: r.y, object: r }); }
+            for (let c of chests) { renderQueue.push({ type: 'chest', y: c.y, object: c }); }
             renderQueue.sort((a, b) => a.y - b.y);
 
-            // 3. เรนเดอร์ออปเจกต์ลงบนจอ
             const pFrameW = pImg.width / 8; const pFrameH = pImg.height / 4;
             const tFrameW = tImg.width / 7; const tFrameH = tImg.height / 4;
 
@@ -191,17 +319,65 @@
                     }
                     ctx.restore();
 
-                } else {
-                    const t = item.tree;
+                } else if (item.type === 'tree') {
+                    const t = item.object;
                     const drawW = tFrameW * 1.4;
                     const drawH = tFrameH * 1.4;
                     const drawX = Math.floor(t.x - drawW / 2);
                     const drawY = Math.floor(t.y - drawH + 10);
                     ctx.drawImage(tImg, 0, t.type * tFrameH, tFrameW, tFrameH, drawX, drawY, drawW, drawH);
+                
+                } else if (item.type === 'rock') {
+                    const r = item.object;
+                    ctx.save();
+                    ctx.fillStyle = "#3a3d3b";
+                    ctx.strokeStyle = "#222423";
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(r.x - r.width/2, r.y + r.height/2);
+                    ctx.lineTo(r.x - r.width/3, r.y - r.height/2);
+                    ctx.lineTo(r.x + r.width/4, r.y - r.height/3);
+                    ctx.lineTo(r.x + r.width/2, r.y + r.height/2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+
+                } else if (item.type === 'chest') {
+                    // 🌟 🛠️ ลอจิกปรับสเกลกล่องตามสัดส่วนตัวละคร (Character-Relative Scaling)
+                    const c = item.object;
+                    if (cImg.width > 0) {
+                        const srcW = cImg.width / 2;
+                        const srcH = cImg.height;
+                        const srcX = c.opened ? srcW : 0; 
+                        
+                        // 🚀 ล็อกขนาดสัมพันธ์กับตัวละคร: ให้กล่องกว้างกว่าเฟรมเดินของน้องมังกร 1.3 เท่าแบบสมส่วนพอดีเป๊ะ
+                        const destW = pFrameW * 1.3;
+                        // คำนวณความสูงตามอัตราส่วนภาพดั้งเดิม (Aspect Ratio) เพื่อไม่ให้ภาพเบี้ยวกลมแบน
+                        const destH = destW * (srcH / srcW);
+                        
+                        const drawX = Math.floor(c.x - destW / 2);
+                        const drawY = Math.floor(c.y - destH / 1.2); // ยกฐานกล่องตั้งพ้นแนวหญ้าพอดี
+                        
+                        ctx.save();
+                        if (!c.opened) {
+                            ctx.shadowBlur = 25; 
+                            ctx.shadowColor = "#ffd700";
+                        }
+                        ctx.drawImage(cImg, srcX, 0, srcW, srcH, drawX, drawY, destW, destH);
+                        ctx.restore();
+                    }
                 }
             }
             
-            ctx.restore();
+            ctx.restore(); 
+            
+            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.height * 0.25, canvas.width/2, canvas.height/2, canvas.width * 0.55);
+            gradient.addColorStop(0, 'rgba(0,0,0,0)');
+            gradient.addColorStop(0.85, 'rgba(4,6,5,0.85)');
+            gradient.addColorStop(1, 'rgba(4,6,5,1.0)'); 
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
