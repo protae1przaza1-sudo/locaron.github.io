@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dragon Girl: Matted Grove v2.1.0 - Pixel Perfect</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #040605; overflow: hidden; touch-action: none; user-select: none; font-family: sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; }
+        h1 { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; color: #ff99aa; font-size: 16px; text-shadow: 0 0 8px #ff99aa55; z-index: 10; pointer-events: none; }
+        #dialogBox { position: fixed; top: 45px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 600px; background-color: rgba(17, 17, 17, 0.85); border: 2px solid #444; border-radius: 10px; padding: 10px; font-size: 14px; color: #eee; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
+        .name { color: #ff6688; font-weight: bold; }
+        #dpad { position: fixed; left: 40px; bottom: 40px; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+        .dpad-row { display: flex; justify-content: center; gap: 15px; margin: 4px 0; }
+        .dpad-btn { width: 65px; height: 65px; font-size: 24px; background: rgba(40,40,40,0.7); color: white; border: 2px solid #666; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <h1>🐉 Dragon Girl v2.1.0 - Pixel Perfect Build</h1>
+    <div id="dialogBox">
+        <span class="name">มังกรน้อย:</span> 
+        <span id="storyText">ผู้กำกับคะ! มินิตรวจเช็กโค้ดและปรับปรุงการซอยขาเดินครบลูป 8 เฟรมให้สมูทแล้วค่ะ แถมผืนดินก็ขี่เกยกันจนเส้นตารางดำหายวับไปแล้วด้วย ลุยเลยค่ะ! 🏃‍♀️✨</span>
+    </div>
+    
+    <div id="dpad">
+        <div class="dpad-btn" id="btnUp" data-key="ArrowUp">🔼</div>
+        <div class="dpad-row">
+            <div class="dpad-btn" id="btnLeft" data-key="ArrowLeft">◀️</div>
+            <div class="dpad-btn" id="btnDown" data-key="ArrowDown">🔽</div>
+            <div class="dpad-btn" id="btnRight" data-key="ArrowRight">▶️</div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const pImgRaw = new Image(); pImgRaw.src = '1291.png';
+        const tImgRaw = new Image(); tImgRaw.src = '1294.png';
+        const gImgRaw = new Image(); gImgRaw.src = '1296.png';
+
+        let pImg, tImg, gImg;
+        let loadedCount = 0;
+        
+        const onAssetLoad = () => {
+            if (++loadedCount === 3) {
+                pImg = removeBlackBackground(pImgRaw);
+                tImg = removeBlackBackground(tImgRaw);
+                gImg = gImgRaw; 
+                initGame();
+            }
+        };
+        pImgRaw.onload = onAssetLoad; tImgRaw.onload = onAssetLoad; gImgRaw.onload = onAssetLoad;
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        // รักษาระยะกล้องสเกลเดิมที่ผู้กำกับชอบ
+        const WORLD_ZOOM = 0.52; 
+
+        // อัปเดตความเร็วแอนิเมชันเดิน (animSpeed) ให้สมดุลเพื่อลบล้างจังหวะภาพกระตุก
+        const player = { x: 0, y: 0, speed: 5, direction: 'front', animFrame: 0, moving: false, animSpeed: 0.15 };
+        const camera = { x: 0, y: 0, easing: 0.1 };
+        const keys = {};
+
+        const dpadBtns = document.querySelectorAll('.dpad-btn');
+        function handleTouch(x, y) {
+            keys['ArrowUp'] = false; keys['ArrowDown'] = false; keys['ArrowLeft'] = false; keys['ArrowRight'] = false;
+            dpadBtns.forEach(btn => {
+                const rect = btn.getBoundingClientRect();
+                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                    keys[btn.getAttribute('data-key')] = true;
+                    btn.style.background = "rgba(120,120,120,0.9)";
+                } else { btn.style.background = "rgba(40,40,40,0.7)"; }
+            });
+        }
+        window.addEventListener('touchstart', e => { for(let i=0; i<e.touches.length; i++) handleTouch(e.touches[i].clientX, e.touches[i].clientY); });
+        window.addEventListener('touchmove', e => { e.preventDefault(); for(let i=0; i<e.touches.length; i++) handleTouch(e.touches[i].clientX, e.touches[i].clientY); }, { passive: false });
+        window.addEventListener('touchend', () => { keys['ArrowUp'] = false; keys['ArrowDown'] = false; keys['ArrowLeft'] = false; keys['ArrowRight'] = false; dpadBtns.forEach(btn => btn.style.background = "rgba(40,40,40,0.7)"); });
+        window.addEventListener('keydown', e => keys[e.key] = true);
+        window.addEventListener('keyup', e => keys[e.key] = false);
+
+        const trees = [];
+        function initGame() {
+            for (let i = 0; i < 45; i++) {
+                trees.push({
+                    x: Math.random() * 2400 - 1200,
+                    y: Math.random() * 2400 - 1200,
+                    type: Math.floor(Math.random() * 4)
+                });
+            }
+            gameLoop();
+        }
+
+        function removeBlackBackground(image) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = image.width; tempCanvas.height = image.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(image, 0, 0);
+            try {
+                const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                const data = imgData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i] <= 15 && data[i+1] <= 15 && data[i+2] <= 15) { data[i+3] = 0; }
+                }
+                tempCtx.putImageData(imgData, 0, 0);
+                return tempCanvas;
+            } catch (e) { return image; }
+        }
+
+        function update() {
+            player.moving = false;
+            if (keys['ArrowUp'] || keys['w']) { player.y -= player.speed; player.direction = 'back'; player.moving = true; }
+            if (keys['ArrowDown'] || keys['s']) { player.y += player.speed; player.direction = 'front'; player.moving = true; }
+            if (keys['ArrowLeft'] || keys['a']) { player.x -= player.speed; player.direction = 'left'; player.moving = true; }
+            if (keys['ArrowRight'] || keys['d']) { player.x += player.speed; player.direction = 'right'; player.moving = true; }
+
+            if (player.moving) { 
+                player.animFrame += player.animSpeed;
+                if (player.animFrame >= 8) player.animFrame = 0; // ลูปแอนิเมชันให้ครบรอบ 8 เฟรมแบบพอดีเวลา
+            } else { 
+                player.animFrame = 0; 
+            }
+
+            camera.x += (player.x - camera.x) * camera.easing;
+            camera.y += (player.y - camera.y) * camera.easing;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2));
+            ctx.scale(WORLD_ZOOM, WORLD_ZOOM);
+            
+            const camX = Math.floor(camera.x);
+            const camY = Math.floor(camera.y);
+            ctx.translate(-camX, -camY);
+
+            // 1. วาดพื้นผิวเชื่อมกันไร้รอยต่อ (แก้บั๊กเส้นกริดดำถาวรด้วย Extra Overlap)
+            const gCellW = gImg.width / 4; const gCellH = gImg.height / 4;
+            
+            // ครอปเนื้อดินเข้ามานิดหน่อยเพื่อเล็งจุดกึ่งกลางแผ่นดิน
+            const sX = gCellW * 0.05; const sY = gCellH * 0.05;
+            const sW = gCellW * 0.90; const sH = gCellH * 0.90;
+            
+            const nativeTileSize = 256; 
+            // 🌟 เพิ่มการเกยทับซ้อนปิดขอบดำหนาขึ้นเป็น 24 พิกเซล บล็อกจะเบียดทับกันจนเส้นรอยต่อหายสนิทครับ
+            const OVERLAP = 24; 
+
+            const startX = Math.floor((camX - canvas.width / WORLD_ZOOM / 2) / nativeTileSize) - 1;
+            const endX = startX + Math.ceil(canvas.width / WORLD_ZOOM / nativeTileSize) + 2;
+            const startY = Math.floor((camY - canvas.height / WORLD_ZOOM / 2) / nativeTileSize) - 1;
+            const endY = startY + Math.ceil(canvas.height / WORLD_ZOOM / nativeTileSize) + 2;
+
+            for (let i = startX; i < endX; i++) {
+                for (let j = startY; j < endY; j++) {
+                    ctx.drawImage(gImg, sX, sY, sW, sH, i * nativeTileSize, j * nativeTileSize, nativeTileSize + OVERLAP, nativeTileSize + OVERLAP);
+                }
+            }
+
+            // 2. จัดเลเยอร์ความสูง (Y-Sorting)
+            const renderQueue = [];
+            renderQueue.push({ type: 'player', y: player.y });
+            for (let t of trees) { renderQueue.push({ type: 'tree', y: t.y, tree: t }); }
+            renderQueue.sort((a, b) => a.y - b.y);
+
+            // 3. เรนเดอร์ออปเจกต์ลงบนจอ
+            const pFrameW = pImg.width / 8; const pFrameH = pImg.height / 4;
+            const tFrameW = tImg.width / 7; const tFrameH = tImg.height / 4;
+
+            for (let item of renderQueue) {
+                if (item.type === 'player') {
+                    const drawX = Math.floor(player.x - pFrameW / 2);
+                    const drawY = Math.floor(player.y - pFrameH);
+                    const currentFrame = Math.floor(player.animFrame) % 8;
+                    
+                    ctx.save();
+                    if (player.direction === 'right') { 
+                        ctx.translate(drawX + pFrameW/2, drawY + pFrameH/2);
+                        ctx.scale(-1, 1);
+                        ctx.drawImage(pImg, currentFrame * pFrameW, 2 * pFrameH, pFrameW, pFrameH, -pFrameW/2, -pFrameH/2, pFrameW, pFrameH);
+                    } else {
+                        let row = 0; 
+                        if (player.direction === 'back') row = 1; 
+                        if (player.direction === 'left') row = 2; 
+                        ctx.drawImage(pImg, currentFrame * pFrameW, row * pFrameH, pFrameW, pFrameH, drawX, drawY, pFrameW, pFrameH);
+                    }
+                    ctx.restore();
+
+                } else {
+                    const t = item.tree;
+                    const drawW = tFrameW * 1.4;
+                    const drawH = tFrameH * 1.4;
+                    const drawX = Math.floor(t.x - drawW / 2);
+                    const drawY = Math.floor(t.y - drawH + 10);
+                    ctx.drawImage(tImg, 0, t.type * tFrameH, tFrameW, tFrameH, drawX, drawY, drawW, drawH);
+                }
+            }
+            
+            ctx.restore();
+        }
+
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+    </script>
+</body>
+</html>
