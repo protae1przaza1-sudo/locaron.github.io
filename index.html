@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dragon Girl: Matted Grove v2.9.5 - Pixel Perfect-Fit Build</title>
+    <title>Dragon Girl: Matted Grove v3.0.0 - Forest Collision Build</title>
     <style>
         body { margin: 0; padding: 0; background-color: #040605; overflow: hidden; touch-action: none; user-select: none; font-family: sans-serif; }
         canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; }
@@ -50,10 +50,10 @@
 </head>
 <body>
 
-    <h1>🐉 Dragon Girl v2.9.5 - Pixel Perfect-Fit</h1>
+    <h1>🐉 Dragon Girl v3.0.0 - Forest Collision Update</h1>
     <div id="dialogBox">
-        <span class="name">มังกรน้อย (ดื้อดึง):</span> 
-        <span id="storyText">หึยยย... มืดมนชะมัด ป่าทึบพวกนี้ล้อมเราไว้หมดเลยเหรอเนี่ย? ชิ! แต่เอ๊ะ... นั่นมันกล่องสมบัติทองคำนี่นา! แอบซ่อนอะไรไว้กันแน่ ขนาดกำลังพอดีคำเลย! 😤🎒✨</span>
+        <span class="name" id="speakerName">มังกรน้อย (ดื้อดึง):</span> 
+        <span id="storyText">หึยยย... มืดมนชะมัด ป่าทึบพวกนี้ล้อมเราไว้หมดเลยเหรอเนี่ย? ชิ! ลองเดินสำรวจรอบๆ ดูดีกว่าค่ะ! 😤🎒✨</span>
     </div>
 
     <div id="statusWindow">
@@ -118,6 +118,9 @@
         const camera = { x: 0, y: 0, easing: 0.1 };
         const keys = {};
 
+        let isComplaining = false;
+        let complainTimer = null;
+
         const dpadBtns = document.querySelectorAll('.dpad-btn');
         function handleTouch(x, y) {
             keys['ArrowUp'] = false; keys['ArrowDown'] = false; keys['ArrowLeft'] = false; keys['ArrowRight'] = false;
@@ -157,6 +160,21 @@
             return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
         }
 
+        function triggerTreeComplaint() {
+            if (player.chests > 0) return; 
+            
+            isComplaining = true;
+            storyText.innerText = "โอ๊ยยย! เจ็บนะ! ต้นไม้จะเยอะจริงอะไรจริงฮะป่านี้! 😤🌲💢";
+            
+            clearTimeout(complainTimer);
+            complainTimer = setTimeout(() => {
+                if (isComplaining && player.chests === 0) {
+                    storyText.innerText = "หึยยย... มืดมนชะมัด ป่าทึบพวกนี้ล้อมเราไว้หมดเลยเหรอเนี่ย? ชิ! ลองเดินสำรวจรอบๆ ดูดีกว่าค่ะ! 😤🎒✨";
+                    isComplaining = false;
+                }
+            }, 1500); 
+        }
+
         function initGame() {
             const baseRadius = 520; 
             const totalWallTrees = 64; 
@@ -190,8 +208,8 @@
 
             rocks.push({ x: -350, y: 220, width: 90, height: 70, radius: 45 });
             
-            // 🌟 🛠️ ตั้งพิกัดกล่องไว้ที่โซนกลางลานเปิดโล่ง (y: 20) พ้นแนวป่าด้านหลังแน่นอน
-            chests.push({ x: 0, y: 20, opened: false, radius: 45, isFirstChest: true });
+            // ปรับตำแหน่งกล่องไปที่มุมขวาตามรูปวงกลมสีแดง
+            chests.push({ x: 320, y: -200, opened: false, radius: 45, isFirstChest: true });
             
             gameLoop();
         }
@@ -226,8 +244,14 @@
             let canMoveY = true;
 
             for (let t of trees) {
-                if (getDistance(nextX, player.y, t.x, t.y) < (player.radius + t.radius)) canMoveX = false;
-                if (getDistance(player.x, nextY, t.x, t.y) < (player.radius + t.radius)) canMoveY = false;
+                if (getDistance(nextX, player.y, t.x, t.y) < (player.radius + t.radius)) {
+                    canMoveX = false;
+                    triggerTreeComplaint();
+                }
+                if (getDistance(player.x, nextY, t.x, t.y) < (player.radius + t.radius)) {
+                    canMoveY = false;
+                    triggerTreeComplaint();
+                }
             }
 
             for (let r of rocks) {
@@ -344,20 +368,17 @@
                     ctx.restore();
 
                 } else if (item.type === 'chest') {
-                    // 🌟 🛠️ ลอจิกปรับสเกลกล่องตามสัดส่วนตัวละคร (Character-Relative Scaling)
                     const c = item.object;
                     if (cImg.width > 0) {
                         const srcW = cImg.width / 2;
                         const srcH = cImg.height;
                         const srcX = c.opened ? srcW : 0; 
                         
-                        // 🚀 ล็อกขนาดสัมพันธ์กับตัวละคร: ให้กล่องกว้างกว่าเฟรมเดินของน้องมังกร 1.3 เท่าแบบสมส่วนพอดีเป๊ะ
                         const destW = pFrameW * 1.3;
-                        // คำนวณความสูงตามอัตราส่วนภาพดั้งเดิม (Aspect Ratio) เพื่อไม่ให้ภาพเบี้ยวกลมแบน
                         const destH = destW * (srcH / srcW);
                         
                         const drawX = Math.floor(c.x - destW / 2);
-                        const drawY = Math.floor(c.y - destH / 1.2); // ยกฐานกล่องตั้งพ้นแนวหญ้าพอดี
+                        const drawY = Math.floor(c.y - destH / 1.2); 
                         
                         ctx.save();
                         if (!c.opened) {
