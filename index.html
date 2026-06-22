@@ -3,56 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dragon Girl: Matted Grove v3.0.0 - Forest Collision Build</title>
+    <title>Dragon Girl: The Magic Forest Update v4.0.0</title>
     <style>
         body { margin: 0; padding: 0; background-color: #040605; overflow: hidden; touch-action: none; user-select: none; font-family: sans-serif; }
-        canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; }
+        canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; transition: opacity 0.6s ease; }
         h1 { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); margin: 0; color: #ff99aa; font-size: 16px; text-shadow: 0 0 8px #ff99aa55; z-index: 10; pointer-events: none; }
-        
-        #dialogBox { position: fixed; top: 45px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 600px; background-color: rgba(17, 17, 17, 0.85); border: 2px solid #ff6688; border-radius: 10px; padding: 10px; font-size: 14px; color: #eee; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
+
+        #dialogBox { position: fixed; top: 45px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 600px; background-color: rgba(17, 17, 17, 0.85); border: 2px solid #ff6688; border-radius: 10px; padding: 10px; font-size: 14px; color: #eee; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; transition: opacity 0.6s ease; }
         .name { color: #ff6688; font-weight: bold; }
-        #statusWindow { position: fixed; right: 20px; top: 10px; background: rgba(0,0,0,0.7); border: 1px solid #ff99aa; padding: 8px 12px; color: #fff; font-size: 12px; border-radius: 5px; z-index: 10; }
-        
-        #dpad-container { 
-            position: fixed; 
-            left: 30px; 
-            bottom: 30px; 
-            z-index: 15; 
-            display: grid;
-            grid-template-columns: repeat(3, 55px);
-            grid-template-rows: repeat(3, 55px);
-            background: rgba(0, 0, 0, 0.15);
-            padding: 5px;
-            border-radius: 8px;
+        #statusWindow { position: fixed; right: 20px; top: 10px; background: rgba(0,0,0,0.7); border: 1px solid #ff99aa; padding: 8px 12px; color: #fff; font-size: 12px; border-radius: 5px; z-index: 10; transition: opacity 0.6s ease; }
+        #questWindow { position: fixed; left: 20px; top: 10px; background: rgba(0,0,0,0.7); border: 1px solid #88ddff; padding: 8px 12px; color: #fff; font-size: 12px; border-radius: 5px; z-index: 10; transition: opacity 0.6s ease; max-width: 200px; }
+
+        #dpad-container {
+            position: fixed; left: 30px; bottom: 30px; z-index: 15;
+            display: grid; grid-template-columns: repeat(3, 55px); grid-template-rows: repeat(3, 55px);
+            background: rgba(0, 0, 0, 0.15); padding: 5px; border-radius: 8px; transition: opacity 0.6s ease;
         }
-        .dpad-btn { 
-            background: rgba(60, 60, 60, 0.45); 
-            border: 1px solid rgba(255, 255, 255, 0.25); 
-            border-radius: 4px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-        }
+        .dpad-btn { background: rgba(60, 60, 60, 0.45); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 4px; display: flex; justify-content: center; align-items: center; }
         .dpad-center { background: rgba(45, 45, 45, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; display: flex; justify-content: center; align-items: center; }
         .center-core { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); transform: rotate(45deg); }
-        
-        #btnUp { grid-column: 2; grid-row: 1; }
-        #btnLeft { grid-column: 1; grid-row: 2; }
-        #btnCenter { grid-column: 2; grid-row: 2; }
-        #btnRight { grid-column: 3; grid-row: 2; }
-        #btnDown { grid-column: 2; grid-row: 3; }
 
+        #btnUp { grid-column: 2; grid-row: 1; } #btnLeft { grid-column: 1; grid-row: 2; }
+        #btnCenter { grid-column: 2; grid-row: 2; } #btnRight { grid-column: 3; grid-row: 2; } #btnDown { grid-column: 2; grid-row: 3; }
         .arrow-up { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid rgba(255,255,255,0.5); }
         .arrow-down { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid rgba(255,255,255,0.5); }
         .arrow-left { width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-right: 12px solid rgba(255,255,255,0.5); }
         .arrow-right { width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid rgba(255,255,255,0.5); }
+
+        /* ---- Pixel-art style loading / transition screen ---- */
+        #loadingScreen {
+            position: fixed; inset: 0; background: #060608; z-index: 100;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            image-rendering: pixelated; opacity: 0; transition: opacity 0.5s ease;
+        }
+        #loadingScreen.show { display: flex; opacity: 1; }
+        #loadIcon {
+            width: 64px; height: 64px; margin-bottom: 22px;
+            background: repeating-linear-gradient(45deg, #ff6688 0 8px, #ff99aa 8px 16px);
+            clip-path: polygon(50% 0%, 80% 20%, 100% 60%, 70% 100%, 30% 100%, 0% 60%, 20% 20%);
+            animation: bounce 0.9s infinite steps(4);
+            box-shadow: 0 0 18px #ff6688aa;
+        }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        #loadText { color: #ffd9e0; font-size: 13px; letter-spacing: 1px; margin-bottom: 14px; text-shadow: 0 0 6px #ff668866; }
+        #loadBarOuter { width: 220px; height: 18px; border: 2px solid #ff99aa; display: flex; gap: 3px; padding: 3px; background: #1a0e12; }
+        .loadBlock { flex: 1; background: #2a1820; }
+        .loadBlock.filled { background: #ff6688; box-shadow: 0 0 6px #ff6688aa; }
+        #loadSub { color: #998; font-size: 10px; margin-top: 16px; text-align: center; max-width: 260px; line-height: 1.5; }
+        #loadingScreen::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px);
+        }
+
+        #fatalError {
+            position: fixed; inset: 0; z-index: 999; display: none;
+            background: rgba(10,0,2,0.95); color: #ffdfe4; font-size: 13px;
+            align-items: center; justify-content: center; padding: 24px; box-sizing: border-box;
+        }
+        #fatalError.show { display: flex; }
+        #fatalError .box { max-width: 480px; border: 2px solid #ff4466; border-radius: 8px; padding: 18px 20px; background: rgba(40,5,10,0.6); line-height: 1.6; }
+        #fatalError h2 { margin: 0 0 10px; color: #ff8899; font-size: 15px; }
+        #fatalError code { background: #1a0408; padding: 2px 6px; border-radius: 4px; color: #ffb3bd; }
     </style>
 </head>
 <body>
 
-    <h1>🐉 Dragon Girl v3.0.0 - Forest Collision Update</h1>
+    <h1>🐉 Dragon Girl v4.0.0 - The Magic Forest Update</h1>
     <div id="dialogBox">
-        <span class="name" id="speakerName">มังกรน้อย (ดื้อดึง):</span> 
+        <span class="name" id="speakerName">มังกรน้อย (ดื้อดึง):</span>
         <span id="storyText">หึยยย... มืดมนชะมัด ป่าทึบพวกนี้ล้อมเราไว้หมดเลยเหรอเนี่ย? ชิ! ลองเดินสำรวจรอบๆ ดูดีกว่าค่ะ! 😤🎒✨</span>
     </div>
 
@@ -63,7 +81,13 @@
         พลังโจมตี (ATK): <span id="statAtk">1</span><br>
         กล่องลับที่พบ: <span id="chestsFound">0</span>/1
     </div>
-    
+
+    <div id="questWindow">
+        📜 เควส: หาทางออกจากป่า<br>
+        🎁 กล่องสมบัติ: <span id="chestFoundMark">❌</span><br>
+        🪨 หินปริศนา: <span id="loreFound">❌</span>
+    </div>
+
     <div id="dpad-container">
         <div class="dpad-btn" id="btnUp" data-key="ArrowUp"><div class="arrow-up"></div></div>
         <div class="dpad-btn" id="btnLeft" data-key="ArrowLeft"><div class="arrow-left"></div></div>
@@ -74,75 +98,128 @@
 
     <canvas id="gameCanvas"></canvas>
 
+    <div id="fatalError">
+        <div class="box">
+            <h2>⚠️ เกมโหลดไม่สำเร็จ</h2>
+            <div id="fatalErrorText">กำลังตรวจสอบ...</div>
+        </div>
+    </div>
+
+    <div id="loadingScreen">
+        <div id="loadIcon"></div>
+        <div id="loadText">กำลังออกจากป่าตื่นรู้...</div>
+        <div id="loadBarOuter">
+            <div class="loadBlock"></div><div class="loadBlock"></div><div class="loadBlock"></div><div class="loadBlock"></div>
+            <div class="loadBlock"></div><div class="loadBlock"></div><div class="loadBlock"></div><div class="loadBlock"></div>
+            <div class="loadBlock"></div><div class="loadBlock"></div>
+        </div>
+        <div id="loadSub">🚧 แมพถัดไป "ทางออกป่าตื่นรู้" กำลังอยู่ในระหว่างพัฒนา<br>เดี๋ยวพากลับเข้าป่าไปก่อนนะคะ...</div>
+    </div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        const pImgRaw = new Image(); pImgRaw.src = '1291.png';
-        const tImgRaw = new Image(); tImgRaw.src = '1294.png';
-        const gImgRaw = new Image(); gImgRaw.src = '1337.png'; 
-        const cImgRaw = new Image(); cImgRaw.src = '1349.png'; 
+        // ---- กล่องแจ้ง error เต็มจอ (เห็นชัด ไม่ต้องเปิด console) ----
+        function showFatalError(html) {
+            const box = document.getElementById('fatalError');
+            document.getElementById('fatalErrorText').innerHTML = html;
+            box.classList.add('show');
+        }
+        window.addEventListener('error', (e) => {
+            showFatalError(`พบข้อผิดพลาดในสคริปต์:<br><code>${(e.message || 'unknown error')}</code><br>(บรรทัด ${e.lineno || '?'})`);
+        });
+
+        const ASSET_SOURCES = { player: '1291.png', tree: '1294.png', ground: '1337.png', chest: '1349.png' };
 
         let pImg, tImg, gImg, cImg;
         let loadedCount = 0;
-        
-        const onAssetLoad = () => {
-            if (++loadedCount === 4) {
+        let assetLoadFailed = false;
+        const failedAssets = [];
+
+        function checkAllLoaded() {
+            if (assetLoadFailed) return; // มีบางไฟล์พังแล้ว ไม่ต้องเริ่มเกม
+            if (loadedCount === 4) {
                 pImg = removeBlackBackground(pImgRaw);
                 tImg = removeBlackBackground(tImgRaw);
-                gImg = gImgRaw; 
-                cImg = cImgRaw; 
+                gImg = gImgRaw;
+                cImg = cImgRaw;
                 initGame();
             }
-        };
-        pImgRaw.onload = onAssetLoad; tImgRaw.onload = onAssetLoad; gImgRaw.onload = onAssetLoad; cImgRaw.onload = onAssetLoad;
+        }
+
+        function makeAssetImage(key, filename) {
+            const img = new Image();
+            img.onload = () => { loadedCount++; checkAllLoaded(); };
+            img.onerror = () => {
+                assetLoadFailed = true;
+                failedAssets.push(filename);
+                showFatalError(
+                    `โหลดรูปไม่สำเร็จ: <code>${failedAssets.join(', ')}</code><br><br>` +
+                    `ตรวจสอบว่า:<br>` +
+                    `1) ไฟล์รูปเหล่านี้อยู่ "โฟลเดอร์เดียวกัน" กับไฟล์ .html นี้<br>` +
+                    `2) ชื่อไฟล์ตรงตัวพิมพ์เล็ก-ใหญ่ทุกตัวอักษร<br>` +
+                    `3) เปิดเกมผ่าน local server (ไม่ใช่ดับเบิลคลิกเปิดตรงๆ) ถ้าเปิดด้วย Live Server / http:// แล้วยัง error ให้ส่งข้อความนี้กลับมา`
+                );
+            };
+            img.src = filename; // ตั้ง src เป็นลำดับสุดท้าย หลังผูก handler ครบแล้วเท่านั้น
+            return img;
+        }
+
+        const pImgRaw = makeAssetImage('player', ASSET_SOURCES.player);
+        const tImgRaw = makeAssetImage('tree', ASSET_SOURCES.tree);
+        const gImgRaw = makeAssetImage('ground', ASSET_SOURCES.ground);
+        const cImgRaw = makeAssetImage('chest', ASSET_SOURCES.chest);
+
+        // กันเคสโหลดค้างเฉยๆไม่ error แต่ก็ไม่ load (เช่น เน็ตหลุด/ path ผิดแบบเงียบ)
+        setTimeout(() => {
+            if (loadedCount < 4 && !assetLoadFailed) {
+                showFatalError(`โหลดรูปภาพช้าเกินไป (โหลดได้ ${loadedCount}/4) ตรวจสอบว่าไฟล์ 1291.png, 1294.png, 1337.png, 1349.png อยู่ในโฟลเดอร์เดียวกับไฟล์เกมหรือไม่`);
+            }
+        }, 6000);
 
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
-        const WORLD_ZOOM = 0.52; 
+        const WORLD_ZOOM = 0.52;
 
-        const player = { 
-            x: 0, 
-            y: 0, 
-            speed: 5, 
-            direction: 'front', 
-            animFrame: 0, 
-            moving: false, 
-            animSpeed: 0.15,
-            radius: 25, 
-            atk: 1,
-            chests: 0
+        const player = {
+            x: 0, y: 0, speed: 5, direction: 'front', animFrame: 0, moving: false, animSpeed: 0.15,
+            radius: 25, atk: 1, chests: 0
         };
-        
+
         const camera = { x: 0, y: 0, easing: 0.1 };
         const keys = {};
+        let inputLocked = false; // ใช้ล็อกการเดินตอน transition
 
         let isComplaining = false;
         let complainTimer = null;
 
         const dpadBtns = document.querySelectorAll('.dpad-btn');
         function handleTouch(x, y) {
+            if (inputLocked) return;
             keys['ArrowUp'] = false; keys['ArrowDown'] = false; keys['ArrowLeft'] = false; keys['ArrowRight'] = false;
             dpadBtns.forEach(btn => {
                 const rect = btn.getBoundingClientRect();
                 if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
                     keys[btn.getAttribute('data-key')] = true;
-                    btn.style.background = "rgba(255, 102, 136, 0.6)"; 
+                    btn.style.background = "rgba(255, 102, 136, 0.6)";
                 } else { btn.style.background = "rgba(60, 60, 60, 0.45)"; }
             });
         }
         window.addEventListener('touchstart', e => { for(let i=0; i<e.touches.length; i++) handleTouch(e.touches[i].clientX, e.touches[i].clientY); });
         window.addEventListener('touchmove', e => { e.preventDefault(); for(let i=0; i<e.touches.length; i++) handleTouch(e.touches[i].clientX, e.touches[i].clientY); }, { passive: false });
         window.addEventListener('touchend', () => { keys['ArrowUp'] = false; keys['ArrowDown'] = false; keys['ArrowLeft'] = false; keys['ArrowRight'] = false; dpadBtns.forEach(btn => btn.style.background = "rgba(60, 60, 60, 0.45)"); });
-        
+
         window.addEventListener('keydown', e => {
+            if (inputLocked) return;
+            if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
             if(e.key === 'w' || e.key === 'W') keys['ArrowUp'] = true;
             if(e.key === 's' || e.key === 'S') keys['ArrowDown'] = true;
             if(e.key === 'a' || e.key === 'A') keys['ArrowLeft'] = true;
             if(e.key === 'd' || e.key === 'D') keys['ArrowRight'] = true;
             keys[e.key] = true;
-        });
+        }, { passive: false });
         window.addEventListener('keyup', e => {
             if(e.key === 'w' || e.key === 'W') keys['ArrowUp'] = false;
             if(e.key === 's' || e.key === 'S') keys['ArrowDown'] = false;
@@ -154,63 +231,233 @@
         const trees = [];
         const rocks = [];
         const chests = [];
-        const storyText = document.getElementById('storyText');
+        const flowers = [];          // ดอกไม้/เศษใบไม้รอบจุดเกิด (ตกแต่งล้วนๆ)
+        const secretProps = [];      // ของประดับในพื้นที่ลับ ???
+        const clutter = [];          // ของตกแต่งพื้น: ก้อนหินเล็ก/พุ่มหญ้า/เห็ดเรืองแสง
+        const particles = [];        // ละอองแสง/หิ่งห้อย (screen-space)
+        let loreStone = null;        // B: หินปริศนา (ปูเรื่อง ไม่ใช่ตัวล็อกทางออก)
+        let secretArea = null;       // พื้นที่ลับ มุมบนซ้าย (เข้าไม่ได้)
+        let exitZone = null;         // C: ทางออกป่า
+        let secretWarned = false;
+        let forestSouthEdgeY = 0;    // ใช้คำนวณแสงลอดตรงทางออก
+        let MAP_MIN_X = 0, MAP_MAX_X = 0, MAP_MIN_Y = 0, MAP_MAX_Y = 0; // ขอบแมพหลัก (ใช้คำนวณป่านอกแมพ)
+        const fogBlobs = [];         // หมอกพรางตะเข็บขอบป่า
 
-        function getDistance(x1, y1, x2, y2) {
-            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        // hash แบบ deterministic: เซลล์เดิมจะได้ค่าเดิมเสมอ (ไม่กระพริบ/สุ่มใหม่ทุกเฟรม)
+        function hashCell(ix, iy, salt) {
+            let h = (ix * 374761393 + iy * 668265263 + salt * 1442695041) | 0;
+            h = (h ^ (h >>> 13)) * 1274126177;
+            h = h ^ (h >>> 16);
+            return ((h >>> 0) % 100000) / 100000;
         }
 
+        const storyText = document.getElementById('storyText');
+        const speakerName = document.getElementById('speakerName');
+
+        function getDistance(x1, y1, x2, y2) { return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2); }
+
+        function distToSegment(px, py, ax, ay, bx, by) {
+            const dx = bx - ax, dy = by - ay;
+            const lenSq = dx * dx + dy * dy;
+            let t = lenSq > 0 ? ((px - ax) * dx + (py - ay) * dy) / lenSq : 0;
+            t = Math.max(0, Math.min(1, t));
+            const cx = ax + t * dx, cy = ay + t * dy;
+            return getDistance(px, py, cx, cy);
+        }
+
+        function distToPath(px, py, pathPoints) {
+            let min = Infinity;
+            for (let i = 0; i < pathPoints.length - 1; i++) {
+                const d = distToSegment(px, py, pathPoints[i].x, pathPoints[i].y, pathPoints[i + 1].x, pathPoints[i + 1].y);
+                if (d < min) min = d;
+            }
+            return min;
+        }
+
+        function setStory(name, text) { speakerName.innerText = name; storyText.innerText = text; }
+
         function triggerTreeComplaint() {
-            if (player.chests > 0) return; 
-            
+            if (player.chests > 0) return;
             isComplaining = true;
-            storyText.innerText = "โอ๊ยยย! เจ็บนะ! ต้นไม้จะเยอะจริงอะไรจริงฮะป่านี้! 😤🌲💢";
-            
+            setStory('มังกรน้อย (โมโห):', 'โอ๊ยยย! เจ็บนะ! ต้นไม้จะเยอะจริงอะไรจริงฮะป่านี้! 😤🌲💢');
             clearTimeout(complainTimer);
             complainTimer = setTimeout(() => {
                 if (isComplaining && player.chests === 0) {
-                    storyText.innerText = "หึยยย... มืดมนชะมัด ป่าทึบพวกนี้ล้อมเราไว้หมดเลยเหรอเนี่ย? ชิ! ลองเดินสำรวจรอบๆ ดูดีกว่าค่ะ! 😤🎒✨";
+                    setStory('มังกรน้อย (ดื้อดึง):', 'หึยยย... มืดมนชะมัด ป่าทึบพวกนี้ล้อมเราไว้หมดเลยเหรอเนี่ย? ชิ! ลองเดินสำรวจรอบๆ ดูดีกว่าค่ะ! 😤🎒✨');
                     isComplaining = false;
                 }
-            }, 1500); 
+            }, 1500);
         }
 
         function initGame() {
-            const baseRadius = 520; 
-            const totalWallTrees = 64; 
-            
-            for (let i = 0; i < totalWallTrees; i++) {
-                const angle = (i / totalWallTrees) * Math.PI * 2;
-                if (angle > 4.5 && angle < 4.9) continue; 
+            const TILE = 140;
+            // กรอบแมพ 48x36 ช่อง โดยให้ S (จุดเกิด) อยู่ที่ (0,0) เป็นจุดอ้างอิง
+            const mapMinX = -3780, mapMaxX = 2800, mapMinY = -1960, mapMaxY = 2940;
+            forestSouthEdgeY = mapMaxY;
+            MAP_MIN_X = mapMinX; MAP_MAX_X = mapMaxX; MAP_MIN_Y = mapMinY; MAP_MAX_Y = mapMaxY;
 
-                const organicWave = Math.sin(angle * 6) * 50 + Math.cos(angle * 3) * 30;
-                const dynamicRadius = baseRadius + organicWave;
-                const tx = Math.cos(angle) * dynamicRadius;
-                const ty = Math.sin(angle) * dynamicRadius;
+            // ---- ตำแหน่งจุดสำคัญตามผัง (S=กลางค่อนขวา, A=บน, B=ซ้าย, C=ล่าง, ???=บนซ้ายสุด) ----
+            const posA = { x: -1120, y: -1120 };
+            const posB = { x: -2100, y: -420 };
+            const secretCenter = { x: -1400, y: -1540 };
+            const secretHalfW = 260, secretHalfH = 200;
+            const exitGateX = 0;
+            const exitGapHalfWidth = 200;
 
-                trees.push({ x: tx, y: ty, type: Math.floor(Math.random() * 4), radius: 42 });
+            const jitter = () => Math.random() * 16 - 8;
+            const randType = () => Math.floor(Math.random() * 4);
+
+            // ---------- 1) กำแพงต้นไม้รอบขอบแมพ (สี่เหลี่ยม) ----------
+            const borderSpacing = 110;
+            for (let x = mapMinX; x <= mapMaxX; x += borderSpacing) {
+                trees.push({ x: x + jitter(), y: mapMinY + jitter(), type: randType(), radius: 42 });
+                if (Math.abs(x - exitGateX) > exitGapHalfWidth) {
+                    trees.push({ x: x + jitter(), y: mapMaxY + jitter(), type: randType(), radius: 42 });
+                }
+            }
+            for (let y = mapMinY; y <= mapMaxY; y += borderSpacing) {
+                trees.push({ x: mapMinX + jitter(), y: y + jitter(), type: randType(), radius: 42 });
+                trees.push({ x: mapMaxX + jitter(), y: y + jitter(), type: randType(), radius: 42 });
             }
 
-            for (let i = 0; i < 160; i++) {
-                const randAngle = Math.random() * Math.PI * 2;
-                const randDist = (baseRadius + 40) + (Math.random() * 800); 
-                if (randAngle > 4.5 && randAngle < 4.9 && randDist < 1400) continue;
-
-                const tx = Math.cos(randAngle) * randDist;
-                const ty = Math.sin(randAngle) * randDist;
-                trees.push({ x: tx, y: ty, type: Math.floor(Math.random() * 4), radius: 40 });
+            // ---------- 2) ทางออกป่าฝั่งใต้ (C) - ต้นไม้บางลงเรื่อยๆ มีแสงลอด ----------
+            exitZone = { x: exitGateX, y: mapMaxY + 260, radius: 110 };
+            for (let y = mapMaxY; y <= exitZone.y + 150; y += 170) {
+                const spread = 220 + (y - mapMaxY) * 0.25;
+                trees.push({ x: -spread + jitter() * 2, y, type: randType(), radius: 40 });
+                trees.push({ x: spread + jitter() * 2, y, type: randType(), radius: 40 });
             }
 
-            for (let pathY = -550; pathY >= -1800; pathY -= 120) {
-                trees.push({ x: -200 - (Math.random() * 20), y: pathY, type: Math.floor(Math.random() * 4), radius: 40 });
-                trees.push({ x: 200 + (Math.random() * 20), y: pathY, type: Math.floor(Math.random() * 4), radius: 40 });
+            // ---------- 3) พื้นที่ลับ ??? มุมบนซ้าย - ปิดล้อมรอบด้าน เข้าไม่ได้ ----------
+            const secSpacing = 65;
+            for (let x = secretCenter.x - secretHalfW; x <= secretCenter.x + secretHalfW; x += secSpacing) {
+                trees.push({ x, y: secretCenter.y - secretHalfH, type: randType(), radius: 40 });
+                trees.push({ x, y: secretCenter.y + secretHalfH, type: randType(), radius: 40 });
+            }
+            for (let y = secretCenter.y - secretHalfH; y <= secretCenter.y + secretHalfH; y += secSpacing) {
+                trees.push({ x: secretCenter.x - secretHalfW, y, type: randType(), radius: 40 });
+                trees.push({ x: secretCenter.x + secretHalfW, y, type: randType(), radius: 40 });
+            }
+            secretArea = { x: secretCenter.x, y: secretCenter.y, halfW: secretHalfW, halfH: secretHalfH };
+            secretProps.push({ kind: 'altar', x: secretCenter.x, y: secretCenter.y + 40 });
+            secretProps.push({ kind: 'statue', x: secretCenter.x - 90, y: secretCenter.y - 30 });
+            secretProps.push({ kind: 'lockedChest', x: secretCenter.x + 100, y: secretCenter.y - 10 });
+
+            // ---------- 4) เส้นทางคดเคี้ยวนำผู้เล่น S -> A -> B -> C (เว้นช่องว่างไม่ให้ต้นไม้บัง) ----------
+            const pathBend = { x: -700, y: 900 }; // จุดหักเลี้ยวให้ทางดูคดเคี้ยวเป็นธรรมชาติ ก่อนจะลงไปทางออก
+            const pathPoints = [
+                { x: 0, y: 0 },                 // S
+                { x: posA.x, y: posA.y },        // A
+                { x: posB.x, y: posB.y },        // B
+                pathBend,
+                { x: exitGateX, y: mapMaxY }     // C (ปากทางออก)
+            ];
+            const pathClear = 150; // ความกว้างของช่องทางเดินที่ห้ามมีต้นไม้
+
+            // ---------- 5) ต้นไม้เกาะกลุ่มเป็นป่าทึบ (cluster) เว้นแนวทางเดินและจุดสำคัญ ----------
+            const landmarks = [
+                { x: 0, y: 0, clear: 170 },
+                { x: posA.x, y: posA.y, clear: 220 },
+                { x: posB.x, y: posB.y, clear: 220 },
+                { x: secretCenter.x, y: secretCenter.y, clear: secretHalfW + 140 },
+                { x: exitGateX, y: mapMaxY, clear: 260 }
+            ];
+            function spotIsClear(x, y, extraClear) {
+                if (distToPath(x, y, pathPoints) < pathClear + extraClear) return false;
+                for (let lm of landmarks) { if (getDistance(x, y, lm.x, lm.y) < lm.clear) return false; }
+                return true;
             }
 
-            rocks.push({ x: -350, y: 220, width: 90, height: 70, radius: 45 });
-            
-            // ปรับตำแหน่งกล่องไปที่มุมขวาตามรูปวงกลมสีแดง
-            chests.push({ x: 320, y: -200, opened: false, radius: 45, isFirstChest: true });
-            
+            let clusterCount = 0, clusterAttempts = 0;
+            while (clusterCount < 24 && clusterAttempts < 2000) {
+                clusterAttempts++;
+                const cx = mapMinX + 200 + Math.random() * (mapMaxX - mapMinX - 400);
+                const cy = mapMinY + 200 + Math.random() * (mapMaxY - mapMinY - 400);
+                if (!spotIsClear(cx, cy, 60)) continue;
+                clusterCount++;
+
+                const treesInCluster = 6 + Math.floor(Math.random() * 8); // 6-13 ต้นต่อกลุ่ม
+                const clusterRadius = 100 + Math.random() * 90;
+                for (let i = 0; i < treesInCluster; i++) {
+                    const a = Math.random() * Math.PI * 2;
+                    const d = Math.random() * clusterRadius;
+                    const tx = cx + Math.cos(a) * d;
+                    const ty = cy + Math.sin(a) * d;
+                    if (tx < mapMinX + 60 || tx > mapMaxX - 60 || ty < mapMinY + 60 || ty > mapMaxY - 60) continue;
+                    if (!spotIsClear(tx, ty, 0)) continue;
+                    trees.push({ x: tx, y: ty, type: randType(), radius: 40 });
+                }
+            }
+
+            // ---------- 5) กล่องสมบัติ A และหินปริศนา B ----------
+            chests.push({ x: posA.x, y: posA.y, opened: false, radius: 45, isFirstChest: true });
+            loreStone = { x: posB.x, y: posB.y, radius: 38, shown: false };
+
+            // ---------- 6) ดอกไม้/เศษใบไม้รอบจุดเกิด (ลานหญ้าที่ผู้เล่นตื่นขึ้นมา) ----------
+            for (let i = 0; i < 10; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const d = Math.random() * 140;
+                flowers.push({ x: Math.cos(a) * d, y: Math.sin(a) * d, hue: Math.random() < 0.5 ? '#ffb6d9' : '#fff3a0' });
+            }
+
+            // ---------- 7) ของตกแต่งพื้น: ก้อนหินเล็ก/พุ่มหญ้า/เห็ดเรืองแสง ตามโคนต้นไม้ ----------
+            for (let t of trees) {
+                if (Math.random() < 0.4) {
+                    const a = Math.random() * Math.PI * 2;
+                    const d = 32 + Math.random() * 26;
+                    const roll = Math.random();
+                    const kind = roll < 0.5 ? 'pebble' : (roll < 0.82 ? 'grassTuft' : 'glowMushroom');
+                    clutter.push({ x: t.x + Math.cos(a) * d, y: t.y + Math.sin(a) * d, kind, seed: Math.random() * 1000 });
+                }
+            }
+            // ของตกแต่งริมทางเดิน (ให้รู้สึกว่ามีคนเดินผ่านบ่อย)
+            for (let i = 0; i < pathPoints.length - 1; i++) {
+                const ax = pathPoints[i].x, ay = pathPoints[i].y;
+                const bx = pathPoints[i + 1].x, by = pathPoints[i + 1].y;
+                const segLen = getDistance(ax, ay, bx, by);
+                const steps = Math.max(2, Math.floor(segLen / 180));
+                for (let s = 0; s <= steps; s++) {
+                    const t = s / steps;
+                    const px = ax + (bx - ax) * t, py = ay + (by - ay) * t;
+                    const nx = -(by - ay), ny = (bx - ax);
+                    const nlen = Math.sqrt(nx * nx + ny * ny) || 1;
+                    const side = Math.random() < 0.5 ? 1 : -1;
+                    const offset = (pathClear + 20 + Math.random() * 40) * side;
+                    if (Math.random() < 0.55) {
+                        const cx2 = px + (nx / nlen) * offset;
+                        const cy2 = py + (ny / nlen) * offset;
+                        const roll = Math.random();
+                        const kind = roll < 0.45 ? 'pebble' : (roll < 0.8 ? 'grassTuft' : 'glowMushroom');
+                        clutter.push({ x: cx2, y: cy2, kind, seed: Math.random() * 1000 });
+                    }
+                }
+            }
+
+            // ---------- 8) ละอองแสง/หิ่งห้อย (screen-space particle, ลอยทั่วจอช้าๆ) ----------
+            for (let i = 0; i < 45; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    speed: 0.25 + Math.random() * 0.45,
+                    size: 1.5 + Math.random() * 2,
+                    phase: Math.random() * Math.PI * 2,
+                    hue: Math.random() < 0.6 ? '255, 244, 170' : '170, 255, 190'
+                });
+            }
+
+            // ---------- 9) หมอกพรางตะเข็บขอบป่า (ลอยเอื่อยๆ บังเหลี่ยมมุมสี่เหลี่ยมของแมพ) ----------
+            const fogSpacing = 380;
+            for (let x = mapMinX; x <= mapMaxX; x += fogSpacing) {
+                fogBlobs.push({ x, y: mapMinY, r: 240 + Math.random() * 120, seed: Math.random() * 1000 });
+                if (Math.abs(x - exitGateX) > 320) {
+                    fogBlobs.push({ x, y: mapMaxY, r: 240 + Math.random() * 120, seed: Math.random() * 1000 });
+                }
+            }
+            for (let y = mapMinY; y <= mapMaxY; y += fogSpacing) {
+                fogBlobs.push({ x: mapMinX, y, r: 240 + Math.random() * 120, seed: Math.random() * 1000 });
+                fogBlobs.push({ x: mapMaxX, y, r: 240 + Math.random() * 120, seed: Math.random() * 1000 });
+            }
+
             gameLoop();
         }
 
@@ -230,7 +477,80 @@
             } catch (e) { return image; }
         }
 
+        function checkLoreStone() {
+            if (!loreStone || loreStone.shown) return;
+            if (getDistance(player.x, player.y, loreStone.x, loreStone.y) < (player.radius + loreStone.radius)) {
+                loreStone.shown = true;
+                document.getElementById('loreFound').innerText = '✅';
+                setStory('มังกรน้อย (สงสัย):', 'มีรอยสลักแปลกประหลาดอยู่บนหิน... ดูเหมือนสัญลักษณ์ของเผ่ามังกร... เอ๊ะ? ทำไมมันถึงมาอยู่ที่นี่นะ 🐉🔍');
+            }
+        }
+
+        function checkSecretArea() {
+            if (!secretArea) return;
+            const dx = Math.max(Math.abs(player.x - secretArea.x) - secretArea.halfW, 0);
+            const dy = Math.max(Math.abs(player.y - secretArea.y) - secretArea.halfH, 0);
+            const distToArea = Math.sqrt(dx * dx + dy * dy);
+            if (distToArea < 130) {
+                if (!secretWarned) {
+                    secretWarned = true;
+                    setStory('มังกรน้อย (อยากรู้อยากเห็น):', 'เอ๊ะ!? มีแท่นหินกับหีบเก่าๆอยู่ข้างในนั่น... แต่ทำไมเข้าไปไม่ได้ล่ะ! หึ! ต้องมีของพิเศษสินะ 🔒✨');
+                }
+            } else { secretWarned = false; }
+        }
+
+        function checkExitZone() {
+            if (!exitZone || transitionStarted) return;
+            if (getDistance(player.x, player.y, exitZone.x, exitZone.y) < (player.radius + exitZone.radius)) {
+                setStory('มังกรน้อย (เบาใจ):', 'แสงสว่างจ้าสาดเข้ามา... ต้นไม้เริ่มบางลงแล้ว นี่สินะทางออกจากป่า! ไปกันเถอะ! 🌲✨🚪');
+                startExitTransition();
+            }
+        }
+
+        let transitionStarted = false;
+        function startExitTransition() {
+            if (transitionStarted) return;
+            transitionStarted = true;
+            inputLocked = true;
+            keys['ArrowUp'] = keys['ArrowDown'] = keys['ArrowLeft'] = keys['ArrowRight'] = false;
+
+            const ui = ['dialogBox', 'statusWindow', 'questWindow', 'dpad-container'];
+            ui.forEach(id => document.getElementById(id).style.opacity = '0');
+            canvas.style.opacity = '0.15';
+
+            const loadingScreen = document.getElementById('loadingScreen');
+            const blocks = document.querySelectorAll('.loadBlock');
+            blocks.forEach(b => b.classList.remove('filled'));
+
+            setTimeout(() => {
+                loadingScreen.classList.add('show');
+                let filled = 0;
+                const fillInterval = setInterval(() => {
+                    if (filled < blocks.length) {
+                        blocks[filled].classList.add('filled');
+                        filled++;
+                    } else {
+                        clearInterval(fillInterval);
+                        // แมพ 2 ยังไม่พร้อม -> รอสักหน่อยแล้วพากลับเข้าป่า (placeholder จนกว่าจะมีแมพ 2 จริง)
+                        setTimeout(() => {
+                            loadingScreen.classList.remove('show');
+                            // วางผู้เล่นถอยจากทางออกเล็กน้อย ป้องกัน trigger ซ้ำทันที
+                            player.y = exitZone.y - 300;
+                            camera.x = player.x; camera.y = player.y;
+                            ui.forEach(id => document.getElementById(id).style.opacity = '1');
+                            canvas.style.opacity = '1';
+                            setStory('มังกรน้อย (เซ็ง):', 'เอ๊ะ? ทางนี้ดันตันอยู่... คนเขียนเกมยังสร้างทางต่อไม่เสร็จเลยสิเนี่ย! 😑 รอแป๊บนะ เดี๋ยวมาต่อให้ค่ะ');
+                            inputLocked = false;
+                            transitionStarted = false;
+                        }, 1400);
+                    }
+                }, 160);
+            }, 350);
+        }
+
         function update() {
+            if (inputLocked) return;
+
             player.moving = false;
             let nextX = player.x;
             let nextY = player.y;
@@ -242,17 +562,13 @@
 
             let canMoveX = true;
             let canMoveY = true;
+            let hitTreeThisFrame = false;
 
             for (let t of trees) {
-                if (getDistance(nextX, player.y, t.x, t.y) < (player.radius + t.radius)) {
-                    canMoveX = false;
-                    triggerTreeComplaint();
-                }
-                if (getDistance(player.x, nextY, t.x, t.y) < (player.radius + t.radius)) {
-                    canMoveY = false;
-                    triggerTreeComplaint();
-                }
+                if (getDistance(nextX, player.y, t.x, t.y) < (player.radius + t.radius)) { canMoveX = false; hitTreeThisFrame = true; }
+                if (getDistance(player.x, nextY, t.x, t.y) < (player.radius + t.radius)) { canMoveY = false; hitTreeThisFrame = true; }
             }
+            if (hitTreeThisFrame) triggerTreeComplaint();
 
             for (let r of rocks) {
                 if (getDistance(nextX, player.y, r.x, r.y) < (player.radius + r.radius)) canMoveX = false;
@@ -266,24 +582,34 @@
                 if (!c.opened && getDistance(player.x, player.y, c.x, c.y) < (player.radius + c.radius)) {
                     c.opened = true;
                     player.chests += 1;
-                    
                     if (c.isFirstChest) {
-                        player.atk += 5; 
-                        document.getElementById('statAtk').innerText = player.atk;
+                        player.atk += 5;
                         document.getElementById('chestsFound').innerText = player.chests;
+                        document.getElementById('chestFoundMark').innerText = '✅';
                         document.getElementById('statusWindow').innerHTML = `เผ่า: มังกร (หญิง)<br>ชุด: ผ้าราคาถูก 👕<br>อาวุธ: กิ่งไม้แห้งอนาถา 🪵<br>พลังโจมตี (ATK): <span id="statAtk">${player.atk}</span><br>กล่องลับที่พบ: <span id="chestsFound">${player.chests}</span>/1`;
-                        
-                        storyText.innerText = "หาาา!? อะไรเนี่ยยย! กล่องทองหรูหราตั้งซะเด่นตระหง่าน แต่ข้างในมีแค่ 'กิ่งไม้แห้งอนาถา' กิ่งเดียวเนี่ยนะ!? คนเขียนบทเอาอะไรคิดเนี่ยยย! หึยยย โกรธแล้วนะ! 😤🪵💢 (แต่เอามาถือประชดชีวิตหน่อยละกัน ลองเดินขึ้นเหนือหาทางออกกันต่อค่ะ)";
+                        setStory('มังกรน้อย (อึ้ง+โมโห):', "หาาา!? อะไรเนี่ยยย! กล่องทองหรูหราตั้งซะเด่นตระหง่าน แต่ข้างในมีแค่ 'กิ่งไม้แห้งอนาถา' กิ่งเดียวเนี่ยนะ!? หึยยย โกรธแล้วนะ! 😤🪵💢 (แต่เอามาถือประชดชีวิตหน่อยละกัน ลองเดินสำรวจรอบๆ ดูสิ น่าจะมีอะไรน่าสนใจอีก)");
                     }
                 }
             }
 
-            if (player.moving) { 
-                player.animFrame += player.animSpeed;
-                if (player.animFrame >= 8) player.animFrame = 0; 
-            } else { 
-                player.animFrame = 0; 
+            checkLoreStone();
+            checkSecretArea();
+            checkExitZone();
+
+            // ละอองแสง/หิ่งห้อย: ลอยขึ้นช้าๆ พร้อมแกว่งซ้ายขวาเบาๆ แล้ววนกลับลงล่างเมื่อหลุดจอ
+            for (let p of particles) {
+                p.y -= p.speed;
+                p.x += Math.sin(p.phase + Date.now() * 0.0012) * 0.35;
+                if (p.y < -20) {
+                    p.y = canvas.height + 10 + Math.random() * 40;
+                    p.x = Math.random() * canvas.width;
+                }
             }
+
+            if (player.moving) {
+                player.animFrame += player.animSpeed;
+                if (player.animFrame >= 8) player.animFrame = 0;
+            } else { player.animFrame = 0; }
 
             camera.x += (player.x - camera.x) * camera.easing;
             camera.y += (player.y - camera.y) * camera.easing;
@@ -291,17 +617,17 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             ctx.save();
             ctx.translate(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2));
             ctx.scale(WORLD_ZOOM, WORLD_ZOOM);
-            
+
             const camX = Math.floor(camera.x);
             const camY = Math.floor(camera.y);
             ctx.translate(-camX, -camY);
 
-            const nativeTileSize = gImg.width > 0 ? gImg.width : 512; 
-            const OVERLAP = 1; 
+            const nativeTileSize = gImg.width > 0 ? gImg.width : 512;
+            const OVERLAP = 1;
 
             const startX = Math.floor((camX - canvas.width / WORLD_ZOOM / 2) / nativeTileSize) - 1;
             const endX = startX + Math.ceil(canvas.width / WORLD_ZOOM / nativeTileSize) + 2;
@@ -314,31 +640,114 @@
                 }
             }
 
+            // ดอกไม้/เศษใบไม้รอบจุดเกิด (ของตกแต่งบนพื้น ไม่ต้องคิดชน)
+            for (let f of flowers) {
+                ctx.beginPath();
+                ctx.fillStyle = f.hue;
+                ctx.globalAlpha = 0.85;
+                ctx.arc(f.x, f.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            // ของตกแต่งพื้น: ก้อนหินเล็ก/พุ่มหญ้า/เห็ดเรืองแสง (ทลายความน่าเบื่อของลายพื้น)
+            for (let c of clutter) {
+                ctx.save();
+                if (c.kind === 'pebble') {
+                    ctx.fillStyle = '#5a5a52'; ctx.strokeStyle = '#34342f'; ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.arc(c.x, c.y, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(c.x + 7, c.y + 3, 3.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                } else if (c.kind === 'grassTuft') {
+                    ctx.strokeStyle = '#3f6b3a'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                    for (let k = -2; k <= 2; k++) {
+                        ctx.beginPath();
+                        ctx.moveTo(c.x + k * 3, c.y);
+                        ctx.lineTo(c.x + k * 4, c.y - 10 - Math.abs(k) * 2);
+                        ctx.stroke();
+                    }
+                } else if (c.kind === 'glowMushroom') {
+                    const pulse = 0.6 + 0.4 * Math.sin(Date.now() / 500 + c.seed);
+                    ctx.shadowBlur = 10 + pulse * 6;
+                    ctx.shadowColor = 'rgba(140, 255, 190, 0.9)';
+                    ctx.fillStyle = '#cfe8d8';
+                    ctx.fillRect(c.x - 1.5, c.y - 6, 3, 8);
+                    ctx.fillStyle = `rgba(150, 255, 200, ${0.7 + pulse * 0.3})`;
+                    ctx.beginPath(); ctx.ellipse(c.x, c.y - 8, 7, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
+            }
+
             const renderQueue = [];
+            renderQueue.push({ type: 'shadow', y: player.y - 1, object: { x: player.x, y: player.y, rw: 30, rh: 12 } });
             renderQueue.push({ type: 'player', y: player.y });
             for (let t of trees) { renderQueue.push({ type: 'tree', y: t.y, object: t }); }
             for (let r of rocks) { renderQueue.push({ type: 'rock', y: r.y, object: r }); }
-            for (let c of chests) { renderQueue.push({ type: 'chest', y: c.y, object: c }); }
+            for (let c of chests) {
+                renderQueue.push({ type: 'shadow', y: c.y - 1, object: { x: c.x, y: c.y, rw: 34, rh: 13 } });
+                renderQueue.push({ type: 'chest', y: c.y, object: c });
+            }
+            if (loreStone) { renderQueue.push({ type: 'stone', y: loreStone.y, object: loreStone }); }
+            for (let p of secretProps) { renderQueue.push({ type: 'secretProp', y: p.y, object: p }); }
+
+            // ---- ป่าทึบไร้ขอบเขตนอกแมพหลัก (คำนวณสดทุกเฟรมจากมุมกล้อง ไม่เก็บ array ใหญ่ ไม่กระทบ performance) ----
+            const CANOPY_CELL = 130;
+            const camHalfW = (canvas.width / WORLD_ZOOM) / 2 + 220;
+            const camHalfH = (canvas.height / WORLD_ZOOM) / 2 + 220;
+            const cStartX = Math.floor((camX - camHalfW) / CANOPY_CELL) - 1;
+            const cEndX = Math.ceil((camX + camHalfW) / CANOPY_CELL) + 1;
+            const cStartY = Math.floor((camY - camHalfH) / CANOPY_CELL) - 1;
+            const cEndY = Math.ceil((camY + camHalfH) / CANOPY_CELL) + 1;
+            const CANOPY_MARGIN = 50;
+
+            for (let ix = cStartX; ix <= cEndX; ix++) {
+                for (let iy = cStartY; iy <= cEndY; iy++) {
+                    const cx = ix * CANOPY_CELL;
+                    const cy = iy * CANOPY_CELL;
+                    const outside = cx < MAP_MIN_X - CANOPY_MARGIN || cx > MAP_MAX_X + CANOPY_MARGIN ||
+                                     cy < MAP_MIN_Y - CANOPY_MARGIN || cy > MAP_MAX_Y + CANOPY_MARGIN;
+                    if (!outside) continue;
+
+                    const r1 = hashCell(ix, iy, 1);
+                    const px = cx + (hashCell(ix, iy, 2) - 0.5) * CANOPY_CELL * 0.85;
+                    const py = cy + (hashCell(ix, iy, 3) - 0.5) * CANOPY_CELL * 0.85;
+
+                    if (r1 < 0.12) {
+                        renderQueue.push({ type: 'cliffRock', y: py, object: { x: px, y: py, seed: r1 } });
+                    } else if (r1 < 0.95) {
+                        const typeR = hashCell(ix, iy, 4);
+                        renderQueue.push({ type: 'tree', y: py, object: { x: px, y: py, type: Math.floor(typeR * 4), radius: 40 } });
+                    }
+                }
+            }
+
             renderQueue.sort((a, b) => a.y - b.y);
 
             const pFrameW = pImg.width / 8; const pFrameH = pImg.height / 4;
             const tFrameW = tImg.width / 7; const tFrameH = tImg.height / 4;
 
             for (let item of renderQueue) {
-                if (item.type === 'player') {
+                if (item.type === 'shadow') {
+                    const s = item.object;
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+                    ctx.beginPath();
+                    ctx.ellipse(s.x, s.y, s.rw, s.rh, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                } else if (item.type === 'player') {
                     const drawX = Math.floor(player.x - pFrameW / 2);
                     const drawY = Math.floor(player.y - pFrameH);
                     const currentFrame = Math.floor(player.animFrame) % 8;
-                    
                     ctx.save();
-                    if (player.direction === 'right') { 
+                    if (player.direction === 'right') {
                         ctx.translate(drawX + pFrameW/2, drawY + pFrameH/2);
                         ctx.scale(-1, 1);
                         ctx.drawImage(pImg, currentFrame * pFrameW, 2 * pFrameH, pFrameW, pFrameH, -pFrameW/2, -pFrameH/2, pFrameW, pFrameH);
                     } else {
-                        let row = 0; 
-                        if (player.direction === 'back') row = 1; 
-                        if (player.direction === 'left') row = 2; 
+                        let row = 0;
+                        if (player.direction === 'back') row = 1;
+                        if (player.direction === 'left') row = 2;
                         ctx.drawImage(pImg, currentFrame * pFrameW, row * pFrameH, pFrameW, pFrameH, drawX, drawY, pFrameW, pFrameH);
                     }
                     ctx.restore();
@@ -347,58 +756,152 @@
                     const t = item.object;
                     const drawW = tFrameW * 1.4;
                     const drawH = tFrameH * 1.4;
-                    const drawX = Math.floor(t.x - drawW / 2);
-                    const drawY = Math.floor(t.y - drawH + 10);
-                    ctx.drawImage(tImg, 0, t.type * tFrameH, tFrameW, tFrameH, drawX, drawY, drawW, drawH);
-                
+                    ctx.drawImage(tImg, 0, t.type * tFrameH, tFrameW, tFrameH, Math.floor(t.x - drawW / 2), Math.floor(t.y - drawH + 10), drawW, drawH);
+
                 } else if (item.type === 'rock') {
                     const r = item.object;
                     ctx.save();
-                    ctx.fillStyle = "#3a3d3b";
-                    ctx.strokeStyle = "#222423";
-                    ctx.lineWidth = 4;
+                    ctx.fillStyle = "#3a3d3b"; ctx.strokeStyle = "#222423"; ctx.lineWidth = 4;
                     ctx.beginPath();
                     ctx.moveTo(r.x - r.width/2, r.y + r.height/2);
                     ctx.lineTo(r.x - r.width/3, r.y - r.height/2);
                     ctx.lineTo(r.x + r.width/4, r.y - r.height/3);
                     ctx.lineTo(r.x + r.width/2, r.y + r.height/2);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
+                    ctx.closePath(); ctx.fill(); ctx.stroke();
+                    ctx.restore();
+
+                } else if (item.type === 'cliffRock') {
+                    const r = item.object;
+                    const m = 1.6 + r.seed * 1.4;
+                    ctx.save();
+                    ctx.fillStyle = '#1c1d1f'; ctx.strokeStyle = '#0c0d0e'; ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.moveTo(r.x - 55 * m, r.y + 40 * m);
+                    ctx.lineTo(r.x - 70 * m, r.y - 30 * m);
+                    ctx.lineTo(r.x - 10 * m, r.y - 75 * m);
+                    ctx.lineTo(r.x + 45 * m, r.y - 50 * m);
+                    ctx.lineTo(r.x + 65 * m, r.y + 20 * m);
+                    ctx.lineTo(r.x + 20 * m, r.y + 45 * m);
+                    ctx.closePath(); ctx.fill(); ctx.stroke();
+                    ctx.strokeStyle = 'rgba(90,95,100,0.4)'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(r.x - 30 * m, r.y - 20 * m); ctx.lineTo(r.x + 10 * m, r.y - 55 * m); ctx.stroke();
                     ctx.restore();
 
                 } else if (item.type === 'chest') {
                     const c = item.object;
                     if (cImg.width > 0) {
-                        const srcW = cImg.width / 2;
-                        const srcH = cImg.height;
-                        const srcX = c.opened ? srcW : 0; 
-                        
-                        const destW = pFrameW * 1.3;
-                        const destH = destW * (srcH / srcW);
-                        
+                        const srcW = cImg.width / 2; const srcH = cImg.height;
+                        const srcX = c.opened ? srcW : 0;
+                        const destW = pFrameW * 1.3; const destH = destW * (srcH / srcW);
                         const drawX = Math.floor(c.x - destW / 2);
-                        const drawY = Math.floor(c.y - destH / 1.2); 
-                        
+                        const drawY = Math.floor(c.y - destH / 1.2);
                         ctx.save();
-                        if (!c.opened) {
-                            ctx.shadowBlur = 25; 
-                            ctx.shadowColor = "#ffd700";
-                        }
+                        if (!c.opened) { ctx.shadowBlur = 25; ctx.shadowColor = "#ffd700"; }
                         ctx.drawImage(cImg, srcX, 0, srcW, srcH, drawX, drawY, destW, destH);
                         ctx.restore();
                     }
+
+                } else if (item.type === 'stone') {
+                    const s = item.object;
+                    ctx.save();
+                    ctx.fillStyle = '#4a5a48'; ctx.strokeStyle = '#23291f'; ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.ellipse(s.x, s.y, 34, 24, 0, 0, Math.PI * 2);
+                    ctx.fill(); ctx.stroke();
+                    ctx.fillStyle = 'rgba(70,110,60,0.6)';
+                    ctx.beginPath(); ctx.arc(s.x - 12, s.y - 6, 8, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(s.x + 10, s.y + 6, 6, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = s.shown ? '#cfe8ff' : 'rgba(220,230,255,0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(s.x, s.y - 10); ctx.lineTo(s.x + 10, s.y); ctx.lineTo(s.x, s.y + 10); ctx.lineTo(s.x - 10, s.y);
+                    ctx.closePath(); ctx.stroke();
+                    ctx.restore();
+
+                } else if (item.type === 'secretProp') {
+                    const p = item.object;
+                    ctx.save();
+                    if (p.kind === 'altar') {
+                        ctx.fillStyle = '#2b2b30'; ctx.strokeStyle = '#15151a'; ctx.lineWidth = 3;
+                        ctx.beginPath(); ctx.ellipse(p.x, p.y, 70, 38, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                        ctx.fillStyle = '#44444c';
+                        ctx.beginPath(); ctx.ellipse(p.x, p.y - 8, 50, 26, 0, 0, Math.PI * 2); ctx.fill();
+                    } else if (p.kind === 'statue') {
+                        ctx.fillStyle = '#3c3c42'; ctx.strokeStyle = '#1c1c20'; ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(p.x - 22, p.y + 50); ctx.lineTo(p.x - 28, p.y - 10); ctx.lineTo(p.x - 6, p.y - 60);
+                        ctx.lineTo(p.x + 14, p.y - 40); ctx.lineTo(p.x + 20, p.y + 10); ctx.lineTo(p.x + 10, p.y + 50);
+                        ctx.closePath(); ctx.fill(); ctx.stroke();
+                        ctx.strokeStyle = '#222226'; ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.moveTo(p.x - 10, p.y - 30); ctx.lineTo(p.x + 4, p.y); ctx.stroke();
+                    } else if (p.kind === 'lockedChest') {
+                        if (cImg && cImg.width > 0) {
+                            const srcW = cImg.width / 2; const srcH = cImg.height;
+                            const destW = (pImg.width / 8) * 1.1; const destH = destW * (srcH / srcW);
+                            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+                            ctx.beginPath(); ctx.ellipse(p.x, p.y, 28, 11, 0, 0, Math.PI * 2); ctx.fill();
+                            ctx.globalAlpha = 0.55;
+                            ctx.drawImage(cImg, 0, 0, srcW, srcH, p.x - destW / 2, p.y - destH, destW, destH);
+                            ctx.globalAlpha = 1;
+                            ctx.font = '24px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('🔒', p.x, p.y - destH / 2);
+                        }
+                    }
+                    ctx.restore();
                 }
             }
-            
-            ctx.restore(); 
-            
+
+            // หมอกพรางตะเข็บขอบป่า - ลอยเอื่อยๆ บังเหลี่ยมมุมสี่เหลี่ยมให้กลืนเข้ากับป่าทึบรอบนอก
+            for (let f of fogBlobs) {
+                const dx = Math.sin(Date.now() / 3000 + f.seed) * 50;
+                const dy = Math.cos(Date.now() / 3500 + f.seed) * 30;
+                const fx = f.x + dx, fy = f.y + dy;
+                const fogGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, f.r);
+                fogGrad.addColorStop(0, 'rgba(8, 18, 13, 0.32)');
+                fogGrad.addColorStop(1, 'rgba(8, 18, 13, 0)');
+                ctx.fillStyle = fogGrad;
+                ctx.beginPath();
+                ctx.arc(fx, fy, f.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // แสงลอดเข้ามาบริเวณทางออกป่า (C) - pulse เบาๆเหมือนแสงแดดตกกระทบลอดผ่านยอดไม้
+            if (exitZone) {
+                ctx.save();
+                const pulse = 0.78 + 0.22 * Math.sin(Date.now() / 900);
+                const lightTop = forestSouthEdgeY - 200;
+                const lightBottom = exitZone.y + 100;
+                const grad = ctx.createLinearGradient(exitZone.x, lightTop, exitZone.x, lightBottom);
+                grad.addColorStop(0, 'rgba(255, 244, 200, 0)');
+                grad.addColorStop(0.55, `rgba(255, 244, 200, ${0.16 * pulse})`);
+                grad.addColorStop(1, `rgba(255, 244, 200, ${0.32 * pulse})`);
+                ctx.fillStyle = grad;
+                ctx.fillRect(exitZone.x - 260, lightTop, 520, lightBottom - lightTop);
+                ctx.restore();
+            }
+
+            ctx.restore();
+
             const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.height * 0.25, canvas.width/2, canvas.height/2, canvas.width * 0.55);
             gradient.addColorStop(0, 'rgba(0,0,0,0)');
             gradient.addColorStop(0.85, 'rgba(4,6,5,0.85)');
-            gradient.addColorStop(1, 'rgba(4,6,5,1.0)'); 
+            gradient.addColorStop(1, 'rgba(4,6,5,1.0)');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // ละอองแสง/หิ่งห้อย วาดทับบนสุด (screen-space เอฟเฟกต์ ไม่ผูกกับกล้อง)
+            for (let p of particles) {
+                const twinkle = 0.55 + 0.45 * Math.sin(p.phase + Date.now() * 0.002);
+                ctx.save();
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = `rgba(${p.hue}, 1)`;
+                ctx.fillStyle = `rgba(${p.hue}, ${0.5 * twinkle})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
         }
 
         function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
